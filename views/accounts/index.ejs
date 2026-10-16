@@ -33,9 +33,7 @@
       <header class="top-bar">
         <div class="container top-bar-content">
           <h1 class="page-title"><%= pageTitle || 'Аккаунты' %></h1>
-          <form action="/logout" method="POST" class="top-bar-logout">
-            <button type="submit" class="btn btn-delete btn-small btn-logout-top">🚪 Выйти</button>
-          </form>
+
         </div>
       </header>
       <main class="container">
@@ -45,10 +43,7 @@
         <div class="table-card">
           <div class="table-header">
             <h2>Управление аккаунтами</h2>
-            <div class="nav-links">
-              <a href="/clients" class="btn btn-small">→ Клиенты онлайн-школы</a>
-              <a href="/accounts/new" class="btn btn-primary">+ Создать аккаунт</a>
-            </div>
+            <a href="/accounts/new" class="btn btn-primary">+ Создать аккаунт</a>
           </div>
           <table>
             <thead>
