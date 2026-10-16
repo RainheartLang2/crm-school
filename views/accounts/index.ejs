@@ -1,0 +1,36 @@
+<link rel="stylesheet" href="/style.css">
+
+<div class="table-card">
+  <div class="table-header">
+    <h2>Управление аккаунтами</h2>
+    <div class="nav-links">
+      <a href="/clients" class="btn btn-small">→ Клиенты онлайн-школы</a>
+      <a href="/accounts/new" class="btn btn-primary">+ Создать аккаунт</a>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Логин</th>
+        <th>Роль</th>
+        <th>Создан</th>
+        <th>Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% accounts.forEach(acc => { %>
+        <tr>
+          <td><%= acc.login %></td>
+          <td><%= acc.role === 'admin' ? 'Администратор' : 'Пользователь' %></td>
+          <td><%= new Date(acc.createdAt).toLocaleString('ru-RU') %></td>
+          <td class="actions">
+            <a href="/accounts/<%= acc.id %>/edit" class="btn btn-small btn-edit">Редактировать</a>
+            <form action="/accounts/<%= acc.id %>/delete" method="POST" onsubmit="return confirm('Удалить аккаунт \"<%= acc.login %>\"?');">
+              <button type="submit" class="btn btn-small btn-delete">Удалить</button>
+            </form>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
+</div>

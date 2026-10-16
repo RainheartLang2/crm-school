@@ -1,0 +1,20 @@
+[
+  {
+    "id": "1792164709527",
+    "name": "Мария Петрова",
+    "email": "maria@example.com",
+    "phone": "+7 900 000-00-02",
+    "course": "Дизайн интерфейсов",
+    "status": "completed",
+    "createdAt": "2026-10-16T15:31:49.524Z"
+  },
+  {
+    "id": "1792164709528",
+    "name": "Алексей Сидоров",
+    "email": "alexey@example.com",
+    "phone": "+7 900 000-00-03",
+    "course": "Маркетинг",
+    "status": "paused",
+    "createdAt": "2026-10-16T15:31:49.524Z"
+  }
+]

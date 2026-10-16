@@ -1,0 +1,26 @@
+<link rel="stylesheet" href="/style.css">
+
+<div class="form-card">
+  <h2>Редактирование аккаунта</h2>
+  <form action="/accounts/<%= account.id %>" method="POST">
+    <div class="form-group">
+      <label for="login">Логин</label>
+      <input type="text" name="login" id="login" required value="<%- account.login %>">
+    </div>
+    <div class="form-group">
+      <label for="password">Новый пароль</label>
+      <input type="password" name="password" id="password" placeholder="Оставьте пустым, чтобы не менять">
+    </div>
+    <div class="form-group">
+      <label for="role">Роль</label>
+      <select name="role" id="role">
+        <option value="user" <%= account.role === 'user' ? 'selected' : '' %>>Пользователь</option>
+        <option value="admin" <%= account.role === 'admin' ? 'selected' : '' %>>Администратор</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+      <a href="/accounts" class="btn btn-small">Отмена</a>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,35 @@
+<link rel="stylesheet" href="/style.css">
+
+<div class="form-card">
+  <h2>Редактирование клиента</h2>
+  <form action="/clients/<%= client.id %>" method="POST">
+    <div class="form-group">
+      <label for="name">Имя клиента</label>
+      <input type="text" name="name" id="name" required value="<%- client.name %>">
+    </div>
+    <div class="form-group">
+      <label for="email">Email</label>
+      <input type="email" name="email" id="email" required value="<%- client.email %>">
+    </div>
+    <div class="form-group">
+      <label for="phone">Телефон</label>
+      <input type="tel" name="phone" id="phone" value="<%- client.phone %>">
+    </div>
+    <div class="form-group">
+      <label for="course">Курс / направление</label>
+      <input type="text" name="course" id="course" value="<%- client.course %>">
+    </div>
+    <div class="form-group">
+      <label for="status">Статус</label>
+      <select name="status" id="status">
+        <option value="active" <%= client.status === 'active' ? 'selected' : '' %>>Активен</option>
+        <option value="completed" <%= client.status === 'completed' ? 'selected' : '' %>>Завершил обучение</option>
+        <option value="paused" <%= client.status === 'paused' ? 'selected' : '' %>>Приостановил</option>
+      </select>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">Сохранить</button>
+      <a href="/clients" class="btn btn-small">Отмена</a>
+    </div>
+  </form>
+</div>

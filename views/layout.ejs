@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title || 'CRM Онлайн-школа' %></title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="app">
+    <% if (currentUser) { %>
+      <aside class="sidebar">
+        <div class="sidebar-brand">
+          <a href="/">CRM Онлайн-школа</a>
+        </div>
+        <nav class="sidebar-nav">
+          <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
+            <span class="nav-icon">👥</span> Клиенты
+          </a>
+          <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
+            <span class="nav-icon">🔐</span> Аккаунты
+          </a>
+        </nav>
+        <div class="sidebar-footer">
+          <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
+          <form action="/logout" method="POST" class="sidebar-logout">
+            <button type="submit" class="btn-logout">Выйти</button>
+          </form>
+        </div>
+      </aside>
+
+      <div class="app-content">
+        <header class="top-bar">
+          <div class="container">
+            <h1 class="page-title"><%= pageTitle || 'Панель управления' %></h1>
+          </div>
+        </header>
+
+        <main class="container">
+          <% if (message) { %>
+            <div class="alert alert-success"><%= message %></div>
+          <% } %>
+          <% if (error) { %>
+            <div class="alert alert-error"><%= error %></div>
+          <% } %>
+          <%- body %>
+        </main>
+
+        <footer class="footer">
+          <div class="container">&copy; 2026 CRM Онлайн-школа</div>
+        </footer>
+      </div>
+    <% } else %>
+      <div class="auth-wrapper">
+        <main class="container">
+          <% if (error) { %>
+            <div class="alert alert-error"><%= error %></div>
+          <% } %>
+          <%- body %>
+        </main>
+      </div>
+    <% } %>
+  </div>
+  <script>
+    const toggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    function openMenu() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    function closeMenu() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    toggle.addEventListener('click', openMenu);
+    overlay.addEventListener('click', closeMenu);
+  </script>
+</body>
+</html>

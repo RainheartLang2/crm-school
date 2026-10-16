@@ -1,0 +1,16 @@
+[
+  {
+    "id": "1792164170053",
+    "login": "Admin",
+    "password": "$2b$10$v9RcH2rKrw5G15CsUgaAk.t1.A74L1fdUM5lfiENHgQCrekIHd7ry",
+    "role": "admin",
+    "createdAt": "2026-10-16T15:22:50.053Z"
+  },
+  {
+    "id": "1792165914067",
+    "login": "ABC",
+    "password": "$2b$10$dXNTiVSMnEeQFH/QS9OuVO/nzFUYN6aAQ9gy0w.C0yC7i4Vfpe4Gq",
+    "role": "user",
+    "createdAt": "2026-10-16T15:51:54.246Z"
+  }
+]
