@@ -1,26 +1,94 @@
-<link rel="stylesheet" href="/style.css">
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Создание аккаунта · CRM Онлайн-школа</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/">CRM Онлайн-школа</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
+          <span class="nav-icon">👥</span> Клиенты
+        </a>
+        <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
+          <span class="nav-icon">🔐</span> Аккаунты
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
+        <form action="/logout" method="POST" class="sidebar-logout">
+          <button type="submit" class="btn-logout">Выйти</button>
+        </form>
+      </div>
+    </aside>
+    <div class="app-content">
+      <header class="top-bar">
+        <div class="container top-bar-content">
+          <h1 class="page-title">Создание аккаунта</h1>
+          <form action="/logout" method="POST" class="top-bar-logout">
+            <button type="submit" class="btn btn-delete btn-small btn-logout-top">🚪 Выйти</button>
+          </form>
+        </div>
+      </header>
+      <main class="container">
+        <% if (error) { %>
+          <div class="alert alert-error"><%= error %></div>
+        <% } %>
+        <div class="form-card">
+          <h2>Создание аккаунта</h2>
+          <form action="/accounts" method="POST">
+            <div class="form-group">
+              <label for="login">Логин</label>
+              <input type="text" name="login" id="login" required placeholder="Введите логин">
+            </div>
+            <div class="form-group">
+              <label for="password">Пароль</label>
+              <input type="password" name="password" id="password" required placeholder="Введите пароль">
+            </div>
+            <div class="form-group">
+              <label for="role">Роль</label>
+              <select name="role" id="role">
+                <option value="user">Пользователь</option>
+                <option value="admin">Администратор</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Создать</button>
+              <a href="/accounts" class="btn btn-small">Отмена</a>
+            </div>
+          </form>
+        </div>
+      </main>
+      <footer class="footer">
+        <div class="container">&copy; 2026 CRM Онлайн-школа</div>
+      </footer>
+    </div>
+  </div>
+  <script>
+    const toggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
 
-<div class="form-card">
-  <h2>Создание аккаунта</h2>
-  <form action="/accounts" method="POST">
-    <div class="form-group">
-      <label for="login">Логин</label>
-      <input type="text" name="login" id="login" required placeholder="Введите логин">
-    </div>
-    <div class="form-group">
-      <label for="password">Пароль</label>
-      <input type="password" name="password" id="password" required placeholder="Введите пароль">
-    </div>
-    <div class="form-group">
-      <label for="role">Роль</label>
-      <select name="role" id="role">
-        <option value="user">Пользователь</option>
-        <option value="admin">Администратор</option>
-      </select>
-    </div>
-    <div class="form-actions">
-      <button type="submit" class="btn btn-primary">Создать</button>
-      <a href="/accounts" class="btn btn-small">Отмена</a>
-    </div>
-  </form>
-</div>
+    function openMenu() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    function closeMenu() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    toggle.addEventListener('click', openMenu);
+    overlay.addEventListener('click', closeMenu);
+  </script>
+</body>
+</html>

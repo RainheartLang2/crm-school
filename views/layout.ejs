@@ -33,8 +33,11 @@
 
       <div class="app-content">
         <header class="top-bar">
-          <div class="container">
+          <div class="container top-bar-content">
             <h1 class="page-title"><%= pageTitle || 'Панель управления' %></h1>
+            <form action="/logout" method="POST" class="top-bar-logout">
+              <button type="submit" class="btn btn-delete btn-small btn-logout-top">🚪 Выйти</button>
+            </form>
           </div>
         </header>
 

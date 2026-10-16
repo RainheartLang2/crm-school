@@ -1,46 +1,114 @@
-<link rel="stylesheet" href="/style.css">
-
-<div class="table-card">
-  <div class="table-header">
-    <h2>Клиенты онлайн-школы</h2>
-    <div class="nav-links">
-      <a href="/accounts" class="btn btn-small">→ Управление аккаунтами</a>
-      <a href="/clients/new" class="btn btn-primary">+ Добавить клиента</a>
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle || 'CRM Онлайн-школа' %></title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/">CRM Онлайн-школа</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
+          <span class="nav-icon">👥</span> Клиенты
+        </a>
+        <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
+          <span class="nav-icon">🔐</span> Аккаунты
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
+        <form action="/logout" method="POST" class="sidebar-logout">
+          <button type="submit" class="btn-logout">Выйти</button>
+        </form>
+      </div>
+    </aside>
+    <div class="app-content">
+      <header class="top-bar">
+        <div class="container top-bar-content">
+          <h1 class="page-title"><%= pageTitle || 'Клиенты' %></h1>
+          <form action="/logout" method="POST" class="top-bar-logout">
+            <button type="submit" class="btn btn-delete btn-small btn-logout-top">🚪 Выйти</button>
+          </form>
+        </div>
+      </header>
+      <main class="container">
+        <% if (error) { %>
+          <div class="alert alert-error"><%= error %></div>
+        <% } %>
+        <div class="table-card">
+          <div class="table-header">
+            <h2>Клиенты онлайн-школы</h2>
+            <div class="nav-links">
+              <a href="/accounts" class="btn btn-small">→ Управление аккаунтами</a>
+              <a href="/clients/new" class="btn btn-primary">+ Добавить клиента</a>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Имя</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Курс</th>
+                <th>Статус</th>
+                <th>Дата создания</th>
+                <th>Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% clients.forEach(c => { %>
+                <tr>
+                  <td><%= c.name %></td>
+                  <td><%= c.email %></td>
+                  <td><%= c.phone %></td>
+                  <td><%= c.course %></td>
+                  <td>
+                    <span class="status-badge status-<%= c.status %>">
+                      <%= c.status === 'active' ? 'Активен' : c.status === 'completed' ? 'Завершил' : 'Приостановил' %>
+                    </span>
+                  </td>
+                  <td><%= new Date(c.createdAt).toLocaleString('ru-RU') %></td>
+                  <td class="actions">
+                    <a href="/clients/<%= c.id %>/edit" class="btn btn-small btn-edit">Редактировать</a>
+                    <form action="/clients/<%= c.id %>/delete" method="POST" onsubmit="return confirm('Удалить клиента \"<%= c.name %>\"?');">
+                      <button type="submit" class="btn btn-small btn-delete">Удалить</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </main>
+      <footer class="footer">
+        <div class="container">&copy; 2026 CRM Онлайн-школа</div>
+      </footer>
     </div>
   </div>
-  <table>
-    <thead>
-      <tr>
-        <th>Имя</th>
-        <th>Email</th>
-        <th>Телефон</th>
-        <th>Курс</th>
-        <th>Статус</th>
-        <th>Дата создания</th>
-        <th>Действия</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% clients.forEach(c => { %>
-        <tr>
-          <td><%= c.name %></td>
-          <td><%= c.email %></td>
-          <td><%= c.phone %></td>
-          <td><%= c.course %></td>
-          <td>
-            <span class="status-badge status-<%= c.status %>">
-              <%= c.status === 'active' ? 'Активен' : c.status === 'completed' ? 'Завершил' : 'Приостановил' %>
-            </span>
-          </td>
-          <td><%= new Date(c.createdAt).toLocaleString('ru-RU') %></td>
-          <td class="actions">
-            <a href="/clients/<%= c.id %>/edit" class="btn btn-small btn-edit">Редактировать</a>
-            <form action="/clients/<%= c.id %>/delete" method="POST" onsubmit="return confirm('Удалить клиента \"<%= c.name %>\"?');">
-              <button type="submit" class="btn btn-small btn-delete">Удалить</button>
-            </form>
-          </td>
-        </tr>
-      <% }) %>
-    </tbody>
-  </table>
-</div>
+  <script>
+    const toggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    function openMenu() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    function closeMenu() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    toggle.addEventListener('click', openMenu);
+    overlay.addEventListener('click', closeMenu);
+  </script>
+</body>
+</html>
