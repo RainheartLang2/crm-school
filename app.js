@@ -5,6 +5,7 @@ const bcrypt = require('bcryptjs');
 const path = require('path');
 const accountsDb = require('./db/accounts');
 const clientsDb = require('./db/clients');
+const coursesDb = require('./db/courses');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,8 +29,17 @@ function ensureDefaultClients() {
   clientsDb.createClient({ id: String(Date.now() + 2), name: 'Алексей Сидоров', email: 'alexey@example.com', phone: '+7 900 000-00-03', course: 'Маркетинг', status: 'paused', createdAt: now });
 }
 
+function ensureDefaultCourses() {
+  if (coursesDb.listCourses().length > 0) return;
+  const now = new Date().toISOString();
+  coursesDb.createCourse({ id: String(Date.now()), name: 'Веб-разработка', description: 'Основы фронтенд- и бэкенд-разработки: HTML, CSS, JavaScript, Node.js.', duration: 24, price: 45000, format: 'group', status: 'active', createdAt: now });
+  coursesDb.createCourse({ id: String(Date.now() + 1), name: 'Дизайн интерфейсов', description: 'UX/UI-дизайн: Figma, прототипирование, дизайн-системы.', duration: 16, price: 38000, format: 'group', status: 'active', createdAt: now });
+  coursesDb.createCourse({ id: String(Date.now() + 2), name: 'Маркетинг', description: 'Digital-маркетинг: SMM, трафик, аналитика рекламных кампаний.', duration: 12, price: 30000, format: 'webinar', status: 'active', createdAt: now });
+}
+
 ensureDefaultAdmin();
 ensureDefaultClients();
+ensureDefaultCourses();
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -106,6 +116,38 @@ app.post('/clients/:id', requireAuth, (req, res) => {
 app.post('/clients/:id/delete', requireAuth, (req, res) => {
   clientsDb.deleteClient(req.params.id);
   res.redirect('/clients');
+});
+
+app.get('/courses', requireAuth, (req, res) => res.render('courses/index', { courses: coursesDb.listCourses(), pageTitle: 'Курсы' }));
+
+app.get('/courses/new', requireAuth, (req, res) => res.render('courses/new', { error: null, course: null }));
+
+app.post('/courses', requireAuth, (req, res) => {
+  const { name, description, duration, price, format, status } = req.body;
+  if (coursesDb.getCourseByName(name)) return res.render('courses/new', { error: 'Курс с таким названием уже существует', course: { name, description, duration, price, format, status } });
+  coursesDb.createCourse({ id: String(Date.now()), name, description, duration, price, format, status, createdAt: new Date().toISOString() });
+  res.redirect('/courses');
+});
+
+app.get('/courses/:id/edit', requireAuth, (req, res) => {
+  const course = coursesDb.getCourseById(req.params.id);
+  if (!course) return res.redirect('/courses');
+  res.render('courses/edit', { course, error: null });
+});
+
+app.post('/courses/:id', requireAuth, (req, res) => {
+  const { name, description, duration, price, format, status } = req.body;
+  const existing = coursesDb.getCourseById(req.params.id);
+  if (!existing) return res.redirect('/courses');
+  const duplicate = coursesDb.getCourseByName(name);
+  if (duplicate && duplicate.id !== req.params.id) return res.render('courses/edit', { course: { ...existing, name, description, duration, price, format, status }, error: 'Курс с таким названием уже существует' });
+  coursesDb.updateCourse({ id: req.params.id, name, description, duration, price, format, status });
+  res.redirect('/courses');
+});
+
+app.post('/courses/:id/delete', requireAuth, (req, res) => {
+  coursesDb.deleteCourse(req.params.id);
+  res.redirect('/courses');
 });
 
 app.get('/accounts', requireAuth, (req, res) => res.render('accounts/index', { accounts: accountsDb.listAccounts(), pageTitle: 'Аккаунты' }));

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Добавление курса · CRM Онлайн-школа</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/">CRM Онлайн-школа</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
+          <span class="nav-icon">👥</span> Клиенты
+        </a>
+        <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
+          <span class="nav-icon">📚</span> Курсы
+        </a>
+        <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
+          <span class="nav-icon">🔐</span> Аккаунты
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
+        <form action="/logout" method="POST" class="sidebar-logout">
+          <button type="submit" class="btn-logout">Выйти</button>
+        </form>
+      </div>
+    </aside>
+    <div class="app-content">
+      <header class="top-bar">
+        <div class="container top-bar-content">
+          <h1 class="page-title">Добавление курса</h1>
+
+        </div>
+      </header>
+      <main class="container">
+        <% if (error) { %>
+          <div class="alert alert-error"><%= error %></div>
+        <% } %>
+        <div class="form-card">
+          <h2>Добавление курса</h2>
+          <form action="/courses" method="POST">
+            <div class="form-group">
+              <label for="name">Название курса</label>
+              <input type="text" name="name" id="name" required placeholder="Например: Веб-разработка" value="<%- (course && course.name) || '' %>">
+            </div>
+            <div class="form-group">
+              <label for="description">Описание</label>
+              <textarea name="description" id="description" rows="3" placeholder="Краткое описание программы курса"><%- (course && course.description) || '' %></textarea>
+            </div>
+            <div class="form-group">
+              <label for="duration">Длительность (недель)</label>
+              <input type="number" name="duration" id="duration" min="1" placeholder="Например: 12" value="<%- (course && course.duration) || '' %>">
+            </div>
+            <div class="form-group">
+              <label for="price">Стоимость (₽)</label>
+              <input type="number" name="price" id="price" min="0" step="0.01" placeholder="Например: 45000" value="<%- (course && course.price) || '' %>">
+            </div>
+            <div class="form-group">
+              <label for="format">Формат обучения</label>
+              <select name="format" id="format">
+                <option value="group" <%= (course && course.format === 'group') ? 'selected' : '' %>>Групповой</option>
+                <option value="individual" <%= (course && course.format === 'individual') ? 'selected' : '' %>>Индивидуальный</option>
+                <option value="webinar" <%= (course && course.format === 'webinar') ? 'selected' : '' %>>Вебинар</option>
+                <option value="self_paced" <%= (course && course.format === 'self_paced') ? 'selected' : '' %>>Самостоятельный</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="status">Статус</label>
+              <select name="status" id="status">
+                <option value="active" <%= (course && course.status === 'active') ? 'selected' : '' %>>Активен</option>
+                <option value="draft" <%= (course && course.status === 'draft') ? 'selected' : '' %>>Черновик</option>
+                <option value="archived" <%= (course && course.status === 'archived') ? 'selected' : '' %>>Архив</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Создать</button>
+              <a href="/courses" class="btn btn-small">Отмена</a>
+            </div>
+          </form>
+        </div>
+      </main>
+      <footer class="footer">
+        <div class="container">&copy; 2026 CRM Онлайн-школа</div>
+      </footer>
+    </div>
+  </div>
+  <script>
+    const toggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    function openMenu() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    function closeMenu() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    toggle.addEventListener('click', openMenu);
+    overlay.addEventListener('click', closeMenu);
+  </script>
+</body>
+</html>

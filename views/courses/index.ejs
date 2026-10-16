@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle || 'CRM Онлайн-школа' %></title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/">CRM Онлайн-школа</a>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
+          <span class="nav-icon">👥</span> Клиенты
+        </a>
+        <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
+          <span class="nav-icon">📚</span> Курсы
+        </a>
+        <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
+          <span class="nav-icon">🔐</span> Аккаунты
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
+        <form action="/logout" method="POST" class="sidebar-logout">
+          <button type="submit" class="btn-logout">Выйти</button>
+        </form>
+      </div>
+    </aside>
+    <div class="app-content">
+      <header class="top-bar">
+        <div class="container top-bar-content">
+          <h1 class="page-title"><%= pageTitle || 'Курсы' %></h1>
+
+        </div>
+      </header>
+      <main class="container">
+        <% if (error) { %>
+          <div class="alert alert-error"><%= error %></div>
+        <% } %>
+        <div class="table-card">
+          <div class="table-header">
+            <h2>Курсы онлайн-школы</h2>
+            <a href="/courses/new" class="btn btn-primary">+ Добавить курс</a>
+          </div>
+          <div class="table-scroll">
+          <table class="courses-table">
+            <thead>
+              <tr>
+                <th class="col-name">Название</th>
+                <th class="col-desc">Описание</th>
+                <th class="col-num">Длительность</th>
+                <th class="col-num">Стоимость</th>
+                <th class="col-format">Формат</th>
+                <th class="col-status">Статус</th>
+                <th class="col-created">Создан</th>
+                <th class="col-actions">Действия</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% courses.forEach(c => { %>
+                <tr>
+                  <td class="col-name"><strong class="course-name"><%= c.name %></strong></td>
+                  <td class="col-desc"><span class="course-desc"><%= c.description || '—' %></span></td>
+                  <td class="col-num"><%= c.duration ? c.duration + ' нед.' : '—' %></td>
+                  <td class="col-num"><%= c.price != null ? Number(c.price).toLocaleString('ru-RU') + ' ₽' : '—' %></td>
+                  <td class="col-format"><%= { group: 'Групповой', individual: 'Индивидуальный', webinar: 'Вебинар', self_paced: 'Самостоятельный' }[c.format] || c.format %></td>
+                  <td class="col-status">
+                    <span class="status-badge status-<%= c.status %>">
+                      <%= c.status === 'active' ? 'Активен' : c.status === 'draft' ? 'Черновик' : 'Архив' %>
+                    </span>
+                  </td>
+                  <td class="col-created"><%= new Date(c.createdAt).toLocaleString('ru-RU') %></td>
+                  <td class="col-actions actions">
+                    <a href="/courses/<%= c.id %>/edit" class="btn btn-small btn-edit">Редактировать</a>
+                    <form action="/courses/<%= c.id %>/delete" method="POST" onsubmit="return confirm('Удалить курс \"<%= c.name %>\"?');">
+                      <button type="submit" class="btn btn-small btn-delete">Удалить</button>
+                    </form>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </main>
+      <footer class="footer">
+        <div class="container">&copy; 2026 CRM Онлайн-школа</div>
+      </footer>
+    </div>
+  </div>
+  <script>
+    const toggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    function openMenu() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    function closeMenu() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    toggle.addEventListener('click', openMenu);
+    overlay.addEventListener('click', closeMenu);
+  </script>
+</body>
+</html>

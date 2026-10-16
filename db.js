@@ -25,6 +25,17 @@ db.exec(`
     status TEXT NOT NULL DEFAULT 'active',
     createdAt TEXT NOT NULL
   );
+
+  CREATE TABLE IF NOT EXISTS courses (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    duration INTEGER,
+    price REAL,
+    format TEXT NOT NULL DEFAULT 'group',
+    status TEXT NOT NULL DEFAULT 'active',
+    createdAt TEXT NOT NULL
+  );
 `);
 
 module.exports = db;
