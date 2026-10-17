@@ -351,6 +351,26 @@ tbody tr:hover { background: var(--violet-soft); }
 }
 .form-hint { margin: 8px 0 0; font-size: 12px; font-style: italic; color: var(--ink-soft); }
 
+/* Profile */
+.profile-info { display: flex; flex-direction: column; }
+.profile-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line-soft);
+}
+.profile-row:last-child { border-bottom: none; }
+.profile-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.profile-value { font-size: 15px; color: var(--ink); text-align: right; font-family: var(--font-display); }
+
 /* Buttons */
 .btn {
   display: inline-flex;

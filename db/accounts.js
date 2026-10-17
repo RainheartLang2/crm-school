@@ -7,6 +7,7 @@ const STMT = {
   insert: db.prepare('INSERT INTO accounts (id, login, password, role, createdAt) VALUES (@id, @login, @password, @role, @createdAt)'),
   update: db.prepare('UPDATE accounts SET login = @login, role = @role, password = @password WHERE id = @id'),
   updateRole: db.prepare('UPDATE accounts SET role = @role WHERE id = @id'),
+  updatePassword: db.prepare('UPDATE accounts SET password = @password WHERE id = @id'),
   remove: db.prepare('DELETE FROM accounts WHERE id = ?')
 };
 
@@ -46,6 +47,10 @@ function updateAccount({ id, login, roles, password }) {
   STMT.update.run({ id, login, role: toRolesValue(roles), password });
 }
 
+function updateAccountPassword(id, password) {
+  STMT.updatePassword.run({ id, password });
+}
+
 // Одноразовая миграция: старая роль "user" переименована в "curator"
 function migrateLegacyUserRoles() {
   for (const row of STMT.all.all()) {
@@ -59,4 +64,4 @@ function deleteAccount(id) {
   STMT.remove.run(id);
 }
 
-module.exports = { listAccounts, getAccountById, getAccountByLogin, createAccount, updateAccount, deleteAccount, migrateLegacyUserRoles };
+module.exports = { listAccounts, getAccountById, getAccountByLogin, createAccount, updateAccount, updateAccountPassword, deleteAccount, migrateLegacyUserRoles };

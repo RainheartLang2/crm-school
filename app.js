@@ -19,6 +19,15 @@ function normalizeRoles(input) {
   return roles.length ? roles : ['curator'];
 }
 
+function validatePasswordStrength(password) {
+  const problems = [];
+  if (password.length < 8) problems.push('не менее 8 символов');
+  if (!/[a-zа-яё]/.test(password)) problems.push('хотя бы одну строчную букву');
+  if (!/[A-ZА-ЯЁ]/.test(password)) problems.push('хотя бы одну заглавную букву');
+  if (!/\d/.test(password)) problems.push('хотя бы одну цифру');
+  return problems;
+}
+
 function ensureDefaultAdmin() {
   const existing = accountsDb.getAccountByLogin('Admin');
   if (existing) {
@@ -118,6 +127,28 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/no-access', requireAuth, (req, res) => res.render('no-access'));
+
+// Профиль доступен при любых ролях
+app.get('/profile', requireAuth, (req, res) => {
+  const account = accountsDb.getAccountById(req.session.user.id);
+  if (!account) return req.session.destroy(() => res.redirect('/login'));
+  res.render('profile', { account, error: null, message: null });
+});
+
+app.post('/profile/password', requireAuth, (req, res) => {
+  const account = accountsDb.getAccountById(req.session.user.id);
+  if (!account) return req.session.destroy(() => res.redirect('/login'));
+  const { currentPassword, newPassword, confirmPassword } = req.body;
+  const render = (error, message) => res.render('profile', { account, error, message });
+  if (!bcrypt.compareSync(currentPassword || '', account.password)) return render('Текущий пароль указан неверно', null);
+  if (!newPassword) return render('Введите новый пароль', null);
+  if (newPassword !== confirmPassword) return render('Новые пароли не совпадают', null);
+  const problems = validatePasswordStrength(newPassword);
+  if (problems.length) return render(`Пароль слишком простой — нужны ${problems.join(', ')}`, null);
+  if (newPassword === currentPassword) return render('Новый пароль не должен совпадать с текущим', null);
+  accountsDb.updateAccountPassword(account.id, bcrypt.hashSync(newPassword, 10));
+  res.render('profile', { account, error: null, message: 'Пароль успешно обновлён' });
+});
 
 app.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));

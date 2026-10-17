@@ -28,6 +28,9 @@
             <span class="nav-icon">Ω</span> Аккаунты
           </a>
         <% } %>
+        <a href="/profile" class="nav-item<%= (requestPath === '/profile') ? ' active' : '' %>">
+          <span class="nav-icon">α</span> Профиль
+        </a>
       </nav>
       <div class="sidebar-footer">
         <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>

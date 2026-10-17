@@ -20,6 +20,7 @@
           <p>Ваша учётная запись не даёт доступа к клиентам, курсам и аккаунтам. Обратитесь к администратору.</p>
           <p>Вход: <strong><%= currentUser.login %></strong></p>
           <div class="form-actions">
+            <a href="/profile" class="btn btn-primary">Мой профиль</a>
             <form action="/logout" method="POST">
               <button type="submit" class="btn btn-delete">Выйти</button>
             </form>

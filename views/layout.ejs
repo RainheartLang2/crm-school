@@ -20,12 +20,18 @@
             <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
               <span class="nav-icon">Ψ</span> Клиенты
             </a>
+            <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
+              <span class="nav-icon">Λ</span> Курсы
+            </a>
           <% } %>
           <% if (currentUser.roles.includes('admin')) { %>
             <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
               <span class="nav-icon">Ω</span> Аккаунты
             </a>
           <% } %>
+          <a href="/profile" class="nav-item<%= (requestPath === '/profile') ? ' active' : '' %>">
+            <span class="nav-icon">α</span> Профиль
+          </a>
         </nav>
         <div class="sidebar-footer">
           <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
