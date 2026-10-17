@@ -12,20 +12,20 @@
   <div class="app">
     <aside class="sidebar">
       <div class="sidebar-brand">
-        <a href="/">CRM Онлайн-школа</a>
+        <a href="/"><span class="brand-mark">Φ</span><span class="brand-text">CRM Онлайн-школа<small>γνῶθι σεαυτόν · познай себя</small></span></a>
       </div>
       <nav class="sidebar-nav">
         <% if (currentUser.roles.includes('curator')) { %>
           <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
-            <span class="nav-icon">👥</span> Клиенты
+            <span class="nav-icon">Ψ</span> Клиенты
           </a>
           <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
-            <span class="nav-icon">📚</span> Курсы
+            <span class="nav-icon">Λ</span> Курсы
           </a>
         <% } %>
         <% if (currentUser.roles.includes('admin')) { %>
           <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
-            <span class="nav-icon">🔐</span> Аккаунты
+            <span class="nav-icon">Ω</span> Аккаунты
           </a>
         <% } %>
       </nav>

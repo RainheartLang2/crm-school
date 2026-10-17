@@ -13,7 +13,12 @@
         <div class="alert alert-error"><%= error %></div>
       <% } %>
       <div class="login-card">
-        <h2>Вход в систему</h2>
+        <div class="login-brand">
+          <span class="login-mark">Φ</span>
+          <h2>CRM Онлайн-школа</h2>
+          <p class="login-tagline">γνῶθι σεαυτόν · познай себя</p>
+        </div>
+        <h3 class="login-subtitle">Вход в систему</h3>
         <form action="/login" method="POST">
           <div class="form-group">
             <label for="login">Логин</label>
@@ -25,6 +30,7 @@
           </div>
           <button type="submit" class="btn btn-primary btn-block">Войти</button>
         </form>
+        <p class="login-quote">«Философия начинается с удивления»<span>— Аристотель</span></p>
       </div>
     </main>
   </div>
