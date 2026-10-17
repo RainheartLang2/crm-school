@@ -10,21 +10,29 @@ const coursesDb = require('./db/courses');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const VALID_ROLES = ['admin', 'teacher', 'user'];
+const VALID_ROLES = ['admin', 'teacher', 'curator'];
+const ALL_ROLES = [...VALID_ROLES].sort();
 
 function normalizeRoles(input) {
   const list = Array.isArray(input) ? input : input ? [input] : [];
   const roles = [...new Set(list.map((role) => String(role).trim()).filter((role) => VALID_ROLES.includes(role)))].sort();
-  return roles.length ? roles : ['user'];
+  return roles.length ? roles : ['curator'];
 }
 
 function ensureDefaultAdmin() {
-  if (accountsDb.getAccountByLogin('Admin')) return;
+  const existing = accountsDb.getAccountByLogin('Admin');
+  if (existing) {
+    // Учётная запись по умолчанию должна иметь все роли
+    if (!ALL_ROLES.every((role) => existing.roles.includes(role))) {
+      accountsDb.updateAccount({ id: existing.id, login: existing.login, roles: ALL_ROLES, password: existing.password });
+    }
+    return;
+  }
   accountsDb.createAccount({
     id: String(Date.now()),
     login: 'Admin',
     password: bcrypt.hashSync('Test', 10),
-    roles: ['admin'],
+    roles: ALL_ROLES,
     createdAt: new Date().toISOString()
   });
 }
@@ -45,6 +53,7 @@ function ensureDefaultCourses() {
   coursesDb.createCourse({ id: String(Date.now() + 2), name: 'Маркетинг', description: 'Digital-маркетинг: SMM, трафик, аналитика рекламных кампаний.', duration: 12, price: 30000, format: 'webinar', status: 'active', createdAt: now });
 }
 
+accountsDb.migrateLegacyUserRoles();
 ensureDefaultAdmin();
 ensureDefaultClients();
 ensureDefaultCourses();
@@ -70,19 +79,31 @@ function requireAuth(req, res, next) {
   next();
 }
 
+function homePath(user) {
+  if (user.roles.includes('curator')) return '/clients';
+  if (user.roles.includes('admin')) return '/accounts';
+  return '/no-access';
+}
+
 function requireAdmin(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
-  if (!req.session.user.roles.includes('admin')) return res.redirect('/clients');
+  if (!req.session.user.roles.includes('admin')) return res.redirect(homePath(req.session.user));
+  next();
+}
+
+function requireCurator(req, res, next) {
+  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user.roles.includes('curator')) return res.redirect(homePath(req.session.user));
   next();
 }
 
 app.get('/', (req, res) => {
-  if (req.session.user) return res.redirect('/clients');
+  if (req.session.user) return res.redirect(homePath(req.session.user));
   res.redirect('/login');
 });
 
 app.get('/login', (req, res) => {
-  if (req.session.user) return res.redirect('/clients');
+  if (req.session.user) return res.redirect(homePath(req.session.user));
   res.render('login', { error: null });
 });
 
@@ -93,31 +114,33 @@ app.post('/login', (req, res) => {
     return res.render('login', { error: 'Неверный логин или пароль' });
   }
   req.session.user = { id: user.id, login: user.login, roles: user.roles };
-  res.redirect('/clients');
+  res.redirect(homePath(req.session.user));
 });
+
+app.get('/no-access', requireAuth, (req, res) => res.render('no-access'));
 
 app.post('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/login'));
 });
 
-app.get('/clients', requireAuth, (req, res) => res.render('clients/index', { clients: clientsDb.listClients(), pageTitle: 'Клиенты' }));
+app.get('/clients', requireCurator, (req, res) => res.render('clients/index', { clients: clientsDb.listClients(), pageTitle: 'Клиенты' }));
 
-app.get('/clients/new', requireAuth, (req, res) => res.render('clients/new', { error: null }));
+app.get('/clients/new', requireCurator, (req, res) => res.render('clients/new', { error: null }));
 
-app.post('/clients', requireAuth, (req, res) => {
+app.post('/clients', requireCurator, (req, res) => {
   const { name, email, phone, course, status } = req.body;
   if (clientsDb.getClientByEmail(email)) return res.render('clients/new', { error: 'Клиент с таким email уже существует' });
   clientsDb.createClient({ id: String(Date.now()), name, email, phone, course, status, createdAt: new Date().toISOString() });
   res.redirect('/clients');
 });
 
-app.get('/clients/:id/edit', requireAuth, (req, res) => {
+app.get('/clients/:id/edit', requireCurator, (req, res) => {
   const client = clientsDb.getClientById(req.params.id);
   if (!client) return res.redirect('/clients');
   res.render('clients/edit', { client, error: null });
 });
 
-app.post('/clients/:id', requireAuth, (req, res) => {
+app.post('/clients/:id', requireCurator, (req, res) => {
   const { name, email, phone, course, status } = req.body;
   const existing = clientsDb.getClientById(req.params.id);
   if (!existing) return res.redirect('/clients');
@@ -127,29 +150,29 @@ app.post('/clients/:id', requireAuth, (req, res) => {
   res.redirect('/clients');
 });
 
-app.post('/clients/:id/delete', requireAuth, (req, res) => {
+app.post('/clients/:id/delete', requireCurator, (req, res) => {
   clientsDb.deleteClient(req.params.id);
   res.redirect('/clients');
 });
 
-app.get('/courses', requireAuth, (req, res) => res.render('courses/index', { courses: coursesDb.listCourses(), pageTitle: 'Курсы' }));
+app.get('/courses', requireCurator, (req, res) => res.render('courses/index', { courses: coursesDb.listCourses(), pageTitle: 'Курсы' }));
 
-app.get('/courses/new', requireAuth, (req, res) => res.render('courses/new', { error: null, course: null }));
+app.get('/courses/new', requireCurator, (req, res) => res.render('courses/new', { error: null, course: null }));
 
-app.post('/courses', requireAuth, (req, res) => {
+app.post('/courses', requireCurator, (req, res) => {
   const { name, description, duration, price, format, status } = req.body;
   if (coursesDb.getCourseByName(name)) return res.render('courses/new', { error: 'Курс с таким названием уже существует', course: { name, description, duration, price, format, status } });
   coursesDb.createCourse({ id: String(Date.now()), name, description, duration, price, format, status, createdAt: new Date().toISOString() });
   res.redirect('/courses');
 });
 
-app.get('/courses/:id/edit', requireAuth, (req, res) => {
+app.get('/courses/:id/edit', requireCurator, (req, res) => {
   const course = coursesDb.getCourseById(req.params.id);
   if (!course) return res.redirect('/courses');
   res.render('courses/edit', { course, error: null });
 });
 
-app.post('/courses/:id', requireAuth, (req, res) => {
+app.post('/courses/:id', requireCurator, (req, res) => {
   const { name, description, duration, price, format, status } = req.body;
   const existing = coursesDb.getCourseById(req.params.id);
   if (!existing) return res.redirect('/courses');
@@ -159,7 +182,7 @@ app.post('/courses/:id', requireAuth, (req, res) => {
   res.redirect('/courses');
 });
 
-app.post('/courses/:id/delete', requireAuth, (req, res) => {
+app.post('/courses/:id/delete', requireCurator, (req, res) => {
   coursesDb.deleteCourse(req.params.id);
   res.redirect('/courses');
 });

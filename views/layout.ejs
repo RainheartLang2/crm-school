@@ -16,9 +16,11 @@
           <a href="/">CRM Онлайн-школа</a>
         </div>
         <nav class="sidebar-nav">
-          <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
-            <span class="nav-icon">👥</span> Клиенты
-          </a>
+          <% if (currentUser.roles.includes('curator')) { %>
+            <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
+              <span class="nav-icon">👥</span> Клиенты
+            </a>
+          <% } %>
           <% if (currentUser.roles.includes('admin')) { %>
             <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
               <span class="nav-icon">🔐</span> Аккаунты

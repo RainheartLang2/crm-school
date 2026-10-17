@@ -20,7 +20,8 @@ const migrateClients = db.prepare('INSERT OR IGNORE INTO clients (id, name, emai
 const run = db.transaction(() => {
   let accounts = 0;
   for (const a of readJson(ACCOUNTS_FILE)) {
-    migrateAccounts.run({ id: String(a.id), login: a.login, password: a.password, role: a.role || 'user', createdAt: a.createdAt || new Date().toISOString() });
+    const role = String(a.role || 'curator').split(',').map((r) => (r === 'user' ? 'curator' : r)).join(',');
+    migrateAccounts.run({ id: String(a.id), login: a.login, password: a.password, role, createdAt: a.createdAt || new Date().toISOString() });
     accounts++;
   }
   let clients = 0;
