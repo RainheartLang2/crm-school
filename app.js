@@ -12,13 +12,19 @@ const PORT = process.env.PORT || 3000;
 
 const VALID_ROLES = ['admin', 'teacher', 'user'];
 
+function normalizeRoles(input) {
+  const list = Array.isArray(input) ? input : input ? [input] : [];
+  const roles = [...new Set(list.map((role) => String(role).trim()).filter((role) => VALID_ROLES.includes(role)))].sort();
+  return roles.length ? roles : ['user'];
+}
+
 function ensureDefaultAdmin() {
   if (accountsDb.getAccountByLogin('Admin')) return;
   accountsDb.createAccount({
     id: String(Date.now()),
     login: 'Admin',
     password: bcrypt.hashSync('Test', 10),
-    role: 'admin',
+    roles: ['admin'],
     createdAt: new Date().toISOString()
   });
 }
@@ -66,7 +72,7 @@ function requireAuth(req, res, next) {
 
 function requireAdmin(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
-  if (req.session.user.role !== 'admin') return res.redirect('/clients');
+  if (!req.session.user.roles.includes('admin')) return res.redirect('/clients');
   next();
 }
 
@@ -86,7 +92,7 @@ app.post('/login', (req, res) => {
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.render('login', { error: 'Неверный логин или пароль' });
   }
-  req.session.user = { id: user.id, login: user.login, role: user.role };
+  req.session.user = { id: user.id, login: user.login, roles: user.roles };
   res.redirect('/clients');
 });
 
@@ -164,9 +170,9 @@ app.get('/accounts/new', requireAdmin, (req, res) => res.render('accounts/new', 
 
 app.post('/accounts', requireAdmin, (req, res) => {
   const { login, password } = req.body;
-  const role = VALID_ROLES.includes(req.body.role) ? req.body.role : 'user';
+  const roles = normalizeRoles(req.body.roles);
   if (accountsDb.getAccountByLogin(login)) return res.render('accounts/new', { error: 'Аккаунт с таким логином уже существует' });
-  accountsDb.createAccount({ id: String(Date.now()), login, password: bcrypt.hashSync(password, 10), role, createdAt: new Date().toISOString() });
+  accountsDb.createAccount({ id: String(Date.now()), login, password: bcrypt.hashSync(password, 10), roles, createdAt: new Date().toISOString() });
   res.redirect('/accounts');
 });
 
@@ -180,13 +186,13 @@ app.post('/accounts/:id', requireAdmin, (req, res) => {
   const { login, password } = req.body;
   const existing = accountsDb.getAccountById(req.params.id);
   if (!existing) return res.redirect('/accounts');
-  const role = VALID_ROLES.includes(req.body.role) ? req.body.role : existing.role;
+  const roles = normalizeRoles(req.body.roles);
   const duplicate = accountsDb.getAccountByLogin(login);
   if (duplicate && duplicate.id !== req.params.id) return res.render('accounts/edit', { account: existing, error: 'Аккаунт с таким логином уже существует' });
   accountsDb.updateAccount({
     id: req.params.id,
     login,
-    role,
+    roles,
     password: password ? bcrypt.hashSync(password, 10) : existing.password
   });
   res.redirect('/accounts');

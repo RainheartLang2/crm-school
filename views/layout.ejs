@@ -19,7 +19,7 @@
           <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
             <span class="nav-icon">👥</span> Клиенты
           </a>
-          <% if (currentUser.role === 'admin') { %>
+          <% if (currentUser.roles.includes('admin')) { %>
             <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
               <span class="nav-icon">🔐</span> Аккаунты
             </a>

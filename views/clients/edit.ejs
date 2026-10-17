@@ -21,7 +21,7 @@
         <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
           <span class="nav-icon">📚</span> Курсы
         </a>
-        <% if (currentUser.role === 'admin') { %>
+        <% if (currentUser.roles.includes('admin')) { %>
           <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
             <span class="nav-icon">🔐</span> Аккаунты
           </a>

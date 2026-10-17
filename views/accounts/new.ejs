@@ -21,7 +21,7 @@
         <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
           <span class="nav-icon">📚</span> Курсы
         </a>
-        <% if (currentUser.role === 'admin') { %>
+        <% if (currentUser.roles.includes('admin')) { %>
           <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
             <span class="nav-icon">🔐</span> Аккаунты
           </a>
@@ -57,12 +57,13 @@
               <input type="password" name="password" id="password" required placeholder="Введите пароль">
             </div>
             <div class="form-group">
-              <label for="role">Роль</label>
-              <select name="role" id="role">
-                <option value="user">Пользователь</option>
-                <option value="teacher">Преподаватель</option>
-                <option value="admin">Администратор</option>
-              </select>
+              <label>Роли</label>
+              <div class="checkbox-group">
+                <label class="checkbox-label"><input type="checkbox" name="roles" value="user"> Пользователь</label>
+                <label class="checkbox-label"><input type="checkbox" name="roles" value="teacher"> Преподаватель</label>
+                <label class="checkbox-label"><input type="checkbox" name="roles" value="admin"> Администратор</label>
+              </div>
+              <p class="form-hint">Можно выбрать несколько ролей. Без выбора по умолчанию назначается роль «Пользователь».</p>
             </div>
             <div class="form-actions">
               <button type="submit" class="btn btn-primary">Создать</button>

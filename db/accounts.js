@@ -9,24 +9,40 @@ const STMT = {
   remove: db.prepare('DELETE FROM accounts WHERE id = ?')
 };
 
+// Роли хранятся в колонке role через запятую (например, "admin,teacher").
+// Строки с одной ролью ("admin") из старых данных разбираются так же корректно.
+function parseRoles(value) {
+  return String(value || '').split(',').map((role) => role.trim()).filter(Boolean);
+}
+
+function toRolesValue(roles) {
+  const list = Array.isArray(roles) ? roles : roles ? [roles] : [];
+  const unique = [...new Set(list.map((role) => String(role).trim()).filter(Boolean))];
+  return unique.length ? unique.join(',') : 'user';
+}
+
+function toAccount(row) {
+  return row ? { ...row, roles: parseRoles(row.role) } : null;
+}
+
 function listAccounts() {
-  return STMT.all.all();
+  return STMT.all.all().map(toAccount);
 }
 
 function getAccountById(id) {
-  return STMT.byId.get(id) || null;
+  return toAccount(STMT.byId.get(id));
 }
 
 function getAccountByLogin(login) {
-  return STMT.byLogin.get(login) || null;
+  return toAccount(STMT.byLogin.get(login));
 }
 
-function createAccount({ id, login, password, role, createdAt }) {
-  STMT.insert.run({ id, login, password, role: role || 'user', createdAt });
+function createAccount({ id, login, password, roles, createdAt }) {
+  STMT.insert.run({ id, login, password, role: toRolesValue(roles), createdAt });
 }
 
-function updateAccount({ id, login, role, password }) {
-  STMT.update.run({ id, login, role: role || 'user', password });
+function updateAccount({ id, login, roles, password }) {
+  STMT.update.run({ id, login, role: toRolesValue(roles), password });
 }
 
 function deleteAccount(id) {

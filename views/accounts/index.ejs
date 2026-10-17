@@ -21,7 +21,7 @@
         <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
           <span class="nav-icon">📚</span> Курсы
         </a>
-        <% if (currentUser.role === 'admin') { %>
+        <% if (currentUser.roles.includes('admin')) { %>
           <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
             <span class="nav-icon">🔐</span> Аккаунты
           </a>
@@ -45,6 +45,7 @@
         <% if (error) { %>
           <div class="alert alert-error"><%= error %></div>
         <% } %>
+        <% const roleLabels = { admin: 'Администратор', teacher: 'Преподаватель', user: 'Пользователь' }; %>
         <div class="table-card">
           <div class="table-header">
             <h2>Управление аккаунтами</h2>
@@ -54,7 +55,7 @@
             <thead>
               <tr>
                 <th>Логин</th>
-                <th>Роль</th>
+                <th>Роли</th>
                 <th>Создан</th>
                 <th>Действия</th>
               </tr>
@@ -63,7 +64,7 @@
               <% accounts.forEach(acc => { %>
                 <tr>
                   <td><%= acc.login %></td>
-                  <td><%= acc.role === 'admin' ? 'Администратор' : acc.role === 'teacher' ? 'Преподаватель' : 'Пользователь' %></td>
+                  <td><%= acc.roles.map((r) => roleLabels[r] || r).join(', ') %></td>
                   <td><%= new Date(acc.createdAt).toLocaleString('ru-RU') %></td>
                   <td class="actions">
                     <a href="/accounts/<%= acc.id %>/edit" class="btn btn-small btn-edit">Редактировать</a>
