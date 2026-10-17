@@ -10,6 +10,8 @@ const coursesDb = require('./db/courses');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const VALID_ROLES = ['admin', 'teacher', 'user'];
+
 function ensureDefaultAdmin() {
   if (accountsDb.getAccountByLogin('Admin')) return;
   accountsDb.createAccount({
@@ -59,6 +61,12 @@ app.use((req, res, next) => {
 
 function requireAuth(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
+  next();
+}
+
+function requireAdmin(req, res, next) {
+  if (!req.session.user) return res.redirect('/login');
+  if (req.session.user.role !== 'admin') return res.redirect('/clients');
   next();
 }
 
@@ -150,27 +158,29 @@ app.post('/courses/:id/delete', requireAuth, (req, res) => {
   res.redirect('/courses');
 });
 
-app.get('/accounts', requireAuth, (req, res) => res.render('accounts/index', { accounts: accountsDb.listAccounts(), pageTitle: 'Аккаунты' }));
+app.get('/accounts', requireAdmin, (req, res) => res.render('accounts/index', { accounts: accountsDb.listAccounts(), pageTitle: 'Аккаунты' }));
 
-app.get('/accounts/new', requireAuth, (req, res) => res.render('accounts/new', { error: null }));
+app.get('/accounts/new', requireAdmin, (req, res) => res.render('accounts/new', { error: null }));
 
-app.post('/accounts', requireAuth, (req, res) => {
-  const { login, password, role } = req.body;
+app.post('/accounts', requireAdmin, (req, res) => {
+  const { login, password } = req.body;
+  const role = VALID_ROLES.includes(req.body.role) ? req.body.role : 'user';
   if (accountsDb.getAccountByLogin(login)) return res.render('accounts/new', { error: 'Аккаунт с таким логином уже существует' });
   accountsDb.createAccount({ id: String(Date.now()), login, password: bcrypt.hashSync(password, 10), role, createdAt: new Date().toISOString() });
   res.redirect('/accounts');
 });
 
-app.get('/accounts/:id/edit', requireAuth, (req, res) => {
+app.get('/accounts/:id/edit', requireAdmin, (req, res) => {
   const account = accountsDb.getAccountById(req.params.id);
   if (!account) return res.redirect('/accounts');
   res.render('accounts/edit', { account, error: null });
 });
 
-app.post('/accounts/:id', requireAuth, (req, res) => {
-  const { login, password, role } = req.body;
+app.post('/accounts/:id', requireAdmin, (req, res) => {
+  const { login, password } = req.body;
   const existing = accountsDb.getAccountById(req.params.id);
   if (!existing) return res.redirect('/accounts');
+  const role = VALID_ROLES.includes(req.body.role) ? req.body.role : existing.role;
   const duplicate = accountsDb.getAccountByLogin(login);
   if (duplicate && duplicate.id !== req.params.id) return res.render('accounts/edit', { account: existing, error: 'Аккаунт с таким логином уже существует' });
   accountsDb.updateAccount({
@@ -182,7 +192,7 @@ app.post('/accounts/:id', requireAuth, (req, res) => {
   res.redirect('/accounts');
 });
 
-app.post('/accounts/:id/delete', requireAuth, (req, res) => {
+app.post('/accounts/:id/delete', requireAdmin, (req, res) => {
   accountsDb.deleteAccount(req.params.id);
   res.redirect('/accounts');
 });

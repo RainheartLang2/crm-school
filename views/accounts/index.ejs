@@ -21,9 +21,11 @@
         <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
           <span class="nav-icon">📚</span> Курсы
         </a>
-        <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
-          <span class="nav-icon">🔐</span> Аккаунты
-        </a>
+        <% if (currentUser.role === 'admin') { %>
+          <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
+            <span class="nav-icon">🔐</span> Аккаунты
+          </a>
+        <% } %>
       </nav>
       <div class="sidebar-footer">
         <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
@@ -61,7 +63,7 @@
               <% accounts.forEach(acc => { %>
                 <tr>
                   <td><%= acc.login %></td>
-                  <td><%= acc.role === 'admin' ? 'Администратор' : 'Пользователь' %></td>
+                  <td><%= acc.role === 'admin' ? 'Администратор' : acc.role === 'teacher' ? 'Преподаватель' : 'Пользователь' %></td>
                   <td><%= new Date(acc.createdAt).toLocaleString('ru-RU') %></td>
                   <td class="actions">
                     <a href="/accounts/<%= acc.id %>/edit" class="btn btn-small btn-edit">Редактировать</a>

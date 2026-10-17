@@ -21,9 +21,11 @@
         <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
           <span class="nav-icon">📚</span> Курсы
         </a>
-        <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
-          <span class="nav-icon">🔐</span> Аккаунты
-        </a>
+        <% if (currentUser.role === 'admin') { %>
+          <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
+            <span class="nav-icon">🔐</span> Аккаунты
+          </a>
+        <% } %>
       </nav>
       <div class="sidebar-footer">
         <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
@@ -58,6 +60,7 @@
               <label for="role">Роль</label>
               <select name="role" id="role">
                 <option value="user">Пользователь</option>
+                <option value="teacher">Преподаватель</option>
                 <option value="admin">Администратор</option>
               </select>
             </div>
