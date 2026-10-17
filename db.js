@@ -36,6 +36,11 @@ db.exec(`
     status TEXT NOT NULL DEFAULT 'active',
     createdAt TEXT NOT NULL
   );
+  CREATE TABLE IF NOT EXISTS course_teachers (
+    course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    account_id TEXT NOT NULL REFERENCES accounts(id) ON DELETE CASCADE,
+    PRIMARY KEY (course_id, account_id)
+  );
 `);
 
 module.exports = db;

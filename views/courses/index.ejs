@@ -19,8 +19,15 @@
           <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
             <span class="nav-icon">Ψ</span> Клиенты
           </a>
+        <% } %>
+        <% if (currentUser.roles.includes('curator') || currentUser.roles.includes('methodist')) { %>
           <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
             <span class="nav-icon">Λ</span> Курсы
+          </a>
+        <% } %>
+        <% if (currentUser.roles.includes('teacher') || currentUser.roles.includes('methodist')) { %>
+          <a href="/my-courses" class="nav-item<%= (requestPath === '/my-courses') ? ' active' : '' %>">
+            <span class="nav-icon">Θ</span> Мои курсы
           </a>
         <% } %>
         <% if (currentUser.roles.includes('admin')) { %>

@@ -6,11 +6,12 @@ const path = require('path');
 const accountsDb = require('./db/accounts');
 const clientsDb = require('./db/clients');
 const coursesDb = require('./db/courses');
+const courseTeachersDb = require('./db/course_teachers');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const VALID_ROLES = ['admin', 'teacher', 'curator'];
+const VALID_ROLES = ['admin', 'teacher', 'curator', 'methodist'];
 const ALL_ROLES = [...VALID_ROLES].sort();
 
 function normalizeRoles(input) {
@@ -26,6 +27,25 @@ function validatePasswordStrength(password) {
   if (!/[A-ZА-ЯЁ]/.test(password)) problems.push('хотя бы одну заглавную букву');
   if (!/\d/.test(password)) problems.push('хотя бы одну цифру');
   return problems;
+}
+
+function normalizeTeacherIds(input) {
+  const list = Array.isArray(input) ? input : input ? [input] : [];
+  return [...new Set(list.map((id) => String(id)))];
+}
+
+// Преподавать могут аккаунты с ролью teacher; методист обладает всеми правами преподавателя
+function canTeach(account) {
+  return account.roles.includes('teacher') || account.roles.includes('methodist');
+}
+
+function filterTeacherIds(ids) {
+  const teacherIds = new Set(accountsDb.listAccounts().filter(canTeach).map((acc) => acc.id));
+  return normalizeTeacherIds(ids).filter((id) => teacherIds.has(id));
+}
+
+function listTeacherAccounts() {
+  return accountsDb.listAccounts().filter(canTeach);
 }
 
 function ensureDefaultAdmin() {
@@ -90,6 +110,8 @@ function requireAuth(req, res, next) {
 
 function homePath(user) {
   if (user.roles.includes('curator')) return '/clients';
+  if (user.roles.includes('methodist')) return '/courses';
+  if (user.roles.includes('teacher')) return '/my-courses';
   if (user.roles.includes('admin')) return '/accounts';
   return '/no-access';
 }
@@ -103,6 +125,18 @@ function requireAdmin(req, res, next) {
 function requireCurator(req, res, next) {
   if (!req.session.user) return res.redirect('/login');
   if (!req.session.user.roles.includes('curator')) return res.redirect(homePath(req.session.user));
+  next();
+}
+
+function requireCourses(req, res, next) {
+  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user.roles.includes('curator') && !req.session.user.roles.includes('methodist')) return res.redirect(homePath(req.session.user));
+  next();
+}
+
+function requireTeaching(req, res, next) {
+  if (!req.session.user) return res.redirect('/login');
+  if (!req.session.user.roles.includes('teacher') && !req.session.user.roles.includes('methodist')) return res.redirect(homePath(req.session.user));
   next();
 }
 
@@ -186,36 +220,50 @@ app.post('/clients/:id/delete', requireCurator, (req, res) => {
   res.redirect('/clients');
 });
 
-app.get('/courses', requireCurator, (req, res) => res.render('courses/index', { courses: coursesDb.listCourses(), pageTitle: 'Курсы' }));
+app.get('/courses', requireCourses, (req, res) => {
+  const courses = coursesDb.listCourses();
+  res.render('courses/index', { courses, pageTitle: 'Курсы' });
+});
 
-app.get('/courses/new', requireCurator, (req, res) => res.render('courses/new', { error: null, course: null }));
+app.get('/courses/new', requireCourses, (req, res) => res.render('courses/new', { error: null, course: null, teachers: listTeacherAccounts(), assignedTeacherIds: [] }));
 
-app.post('/courses', requireCurator, (req, res) => {
+app.post('/courses', requireCourses, (req, res) => {
   const { name, description, duration, price, format, status } = req.body;
-  if (coursesDb.getCourseByName(name)) return res.render('courses/new', { error: 'Курс с таким названием уже существует', course: { name, description, duration, price, format, status } });
-  coursesDb.createCourse({ id: String(Date.now()), name, description, duration, price, format, status, createdAt: new Date().toISOString() });
+  const assignedTeacherIds = filterTeacherIds(req.body.teacherIds);
+  if (coursesDb.getCourseByName(name)) return res.render('courses/new', { error: 'Курс с таким названием уже существует', course: { name, description, duration, price, format, status }, teachers: listTeacherAccounts(), assignedTeacherIds });
+  const id = String(Date.now());
+  coursesDb.createCourse({ id, name, description, duration, price, format, status, createdAt: new Date().toISOString() });
+  courseTeachersDb.setCourseTeachers(id, assignedTeacherIds);
   res.redirect('/courses');
 });
 
-app.get('/courses/:id/edit', requireCurator, (req, res) => {
+app.get('/courses/:id/edit', requireCourses, (req, res) => {
   const course = coursesDb.getCourseById(req.params.id);
   if (!course) return res.redirect('/courses');
-  res.render('courses/edit', { course, error: null });
+  res.render('courses/edit', { course, error: null, teachers: listTeacherAccounts(), assignedTeacherIds: courseTeachersDb.getTeacherIdsForCourse(course.id) });
 });
 
-app.post('/courses/:id', requireCurator, (req, res) => {
+app.post('/courses/:id', requireCourses, (req, res) => {
   const { name, description, duration, price, format, status } = req.body;
   const existing = coursesDb.getCourseById(req.params.id);
   if (!existing) return res.redirect('/courses');
+  const assignedTeacherIds = filterTeacherIds(req.body.teacherIds);
   const duplicate = coursesDb.getCourseByName(name);
-  if (duplicate && duplicate.id !== req.params.id) return res.render('courses/edit', { course: { ...existing, name, description, duration, price, format, status }, error: 'Курс с таким названием уже существует' });
+  if (duplicate && duplicate.id !== req.params.id) return res.render('courses/edit', { course: { ...existing, name, description, duration, price, format, status }, error: 'Курс с таким названием уже существует', teachers: listTeacherAccounts(), assignedTeacherIds });
   coursesDb.updateCourse({ id: req.params.id, name, description, duration, price, format, status });
+  courseTeachersDb.setCourseTeachers(req.params.id, assignedTeacherIds);
   res.redirect('/courses');
 });
 
-app.post('/courses/:id/delete', requireCurator, (req, res) => {
+app.post('/courses/:id/delete', requireCourses, (req, res) => {
+  courseTeachersDb.removeCourse(req.params.id);
   coursesDb.deleteCourse(req.params.id);
   res.redirect('/courses');
+});
+
+app.get('/my-courses', requireTeaching, (req, res) => {
+  const courses = courseTeachersDb.listCoursesForTeacher(req.session.user.id);
+  res.render('my-courses', { courses, pageTitle: 'Мои курсы' });
 });
 
 app.get('/accounts', requireAdmin, (req, res) => res.render('accounts/index', { accounts: accountsDb.listAccounts(), pageTitle: 'Аккаунты' }));
@@ -253,6 +301,7 @@ app.post('/accounts/:id', requireAdmin, (req, res) => {
 });
 
 app.post('/accounts/:id/delete', requireAdmin, (req, res) => {
+  courseTeachersDb.removeTeacher(req.params.id);
   accountsDb.deleteAccount(req.params.id);
   res.redirect('/accounts');
 });

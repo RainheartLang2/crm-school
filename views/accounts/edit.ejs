@@ -66,6 +66,7 @@
               <div class="checkbox-group">
                 <label class="checkbox-label"><input type="checkbox" name="roles" value="curator" <%= account.roles.includes('curator') ? 'checked' : '' %>> Куратор</label>
                 <label class="checkbox-label"><input type="checkbox" name="roles" value="teacher" <%= account.roles.includes('teacher') ? 'checked' : '' %>> Преподаватель</label>
+                <label class="checkbox-label"><input type="checkbox" name="roles" value="methodist" <%= account.roles.includes('methodist') ? 'checked' : '' %>> Методист</label>
                 <label class="checkbox-label"><input type="checkbox" name="roles" value="admin" <%= account.roles.includes('admin') ? 'checked' : '' %>> Администратор</label>
               </div>
               <p class="form-hint">Можно выбрать несколько ролей. Без выбора по умолчанию назначается роль «Куратор».</p>

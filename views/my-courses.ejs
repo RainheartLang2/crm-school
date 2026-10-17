@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= pageTitle || 'Мои курсы' %> · CRM Онлайн-школа</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <a href="/"><span class="brand-mark">Φ</span><span class="brand-text">CRM Онлайн-школа<small>γνῶθι σεαυτόν · познай себя</small></span></a>
+      </div>
+      <nav class="sidebar-nav">
+        <% if (currentUser.roles.includes('curator')) { %>
+          <a href="/clients" class="nav-item<%= (requestPath === '/clients') ? ' active' : '' %>">
+            <span class="nav-icon">Ψ</span> Клиенты
+          </a>
+        <% } %>
+        <% if (currentUser.roles.includes('curator') || currentUser.roles.includes('methodist')) { %>
+          <a href="/courses" class="nav-item<%= (requestPath.indexOf('/courses') === 0) ? ' active' : '' %>">
+            <span class="nav-icon">Λ</span> Курсы
+          </a>
+        <% } %>
+        <% if (currentUser.roles.includes('teacher') || currentUser.roles.includes('methodist')) { %>
+          <a href="/my-courses" class="nav-item<%= (requestPath === '/my-courses') ? ' active' : '' %>">
+            <span class="nav-icon">Θ</span> Мои курсы
+          </a>
+        <% } %>
+        <% if (currentUser.roles.includes('admin')) { %>
+          <a href="/accounts" class="nav-item<%= (requestPath === '/accounts') ? ' active' : '' %>">
+            <span class="nav-icon">Ω</span> Аккаунты
+          </a>
+        <% } %>
+        <a href="/profile" class="nav-item<%= (requestPath === '/profile') ? ' active' : '' %>">
+          <span class="nav-icon">α</span> Профиль
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <span class="sidebar-user">Вход: <strong><%= currentUser.login %></strong></span>
+        <form action="/logout" method="POST" class="sidebar-logout">
+          <button type="submit" class="btn-logout">Выйти</button>
+        </form>
+      </div>
+    </aside>
+    <div class="app-content">
+      <header class="top-bar">
+        <div class="container top-bar-content">
+          <h1 class="page-title"><%= pageTitle || 'Мои курсы' %></h1>
+        </div>
+      </header>
+      <main class="container">
+        <div class="table-card">
+          <div class="table-header">
+            <h2>Курсы, которые я преподаю</h2>
+          </div>
+          <div class="table-scroll">
+          <% if (!courses.length) { %>
+            <p class="form-hint">Пока ни один курс не назначен. Обратитесь к методисту.</p>
+          <% } else { %>
+          <table class="courses-table">
+            <thead>
+              <tr>
+                <th class="col-name">Название</th>
+                <th class="col-desc">Описание</th>
+                <th class="col-num">Длительность</th>
+                <th class="col-num">Стоимость</th>
+                <th class="col-format">Формат</th>
+                <th class="col-status">Статус</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% courses.forEach(c => { %>
+                <tr>
+                  <td class="col-name"><strong class="course-name"><%= c.name %></strong></td>
+                  <td class="col-desc"><span class="course-desc"><%= c.description || '—' %></span></td>
+                  <td class="col-num"><%= c.duration ? c.duration + ' нед.' : '—' %></td>
+                  <td class="col-num"><%= c.price != null ? Number(c.price).toLocaleString('ru-RU') + ' ₽' : '—' %></td>
+                  <td class="col-format"><%= { group: 'Групповой', individual: 'Индивидуальный', webinar: 'Вебинар', self_paced: 'Самостоятельный' }[c.format] || c.format %></td>
+                  <td class="col-status">
+                    <span class="status-badge status-<%= c.status %>">
+                      <%= c.status === 'active' ? 'Активен' : c.status === 'draft' ? 'Черновик' : 'Архив' %>
+                    </span>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+          <% } %>
+          </div>
+        </div>
+      </main>
+      <footer class="footer">
+        <div class="container">&copy; 2026 CRM Онлайн-школа</div>
+      </footer>
+    </div>
+  </div>
+  <script>
+    const toggle = document.getElementById('mobileMenuToggle');
+    const sidebar = document.querySelector('.sidebar');
+    const overlay = document.getElementById('sidebarOverlay');
+
+    function openMenu() {
+      sidebar.classList.add('open');
+      overlay.classList.add('open');
+    }
+
+    function closeMenu() {
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    }
+
+    toggle.addEventListener('click', openMenu);
+    overlay.addEventListener('click', closeMenu);
+  </script>
+</body>
+</html>
